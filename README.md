@@ -1,1 +1,2 @@
-# CS540
+# CS540 - Object-Oriented
+# Project 1
