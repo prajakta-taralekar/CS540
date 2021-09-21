@@ -207,3 +207,32 @@ bool Deque_##t##_equal(Deque_##t &deq1, Deque_##t &deq2)
       }                                                                          
     return true;                                                               
   }      
+
+void Deque_##t##_ctor(Deque_##t *deq, bool (*comp)(const t &, const t &)) 
+  {  
+    deq->cap = DEF_CAP;                                                        
+    deq->start_i = 0;                                                          
+    deq->offset = 0;                                                           
+    deq->type_name[0] = '\0';                                                  
+    strcat(deq->type_name, "Deque_");                                          
+    strcat(deq->type_name, #t);                                                
+    deq->data = (t *)malloc(deq->cap * sizeof(t));                             
+    deq->comp = comp;                                                          
+    deq->compar = t##_compar;                                                  
+    deq->size = &size;                                                         
+    deq->empty = &empty;                                                       
+    deq->resize = &resize;                                                     
+    deq->push_front = &push_front;                                             
+    deq->push_back = &push_back;                                               
+    deq->pop_front = &pop_front;                                               
+    deq->pop_back = &pop_back;                                                 
+    deq->at = &at;                                                             
+    deq->front = &front;                                                       
+    deq->back = &back;                                                         
+    deq->begin = &begin;                                                       
+    deq->end = &end;                                                           
+    deq->clear = &clear;                                                       
+    deq->dtor = &dtor;                                                        
+    deq->sort = &sort;                                                         
+  }
+#endif
