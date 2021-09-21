@@ -145,3 +145,65 @@ void pop_back(Deque_##t *deq)
           deq->offset--;                                                         
       }                                                                          
   }       
+
+t &at(Deque_##t *deq, unsigned int index) 
+  {                                  
+    return deq->data[(deq->start_i + index) % deq->cap];                       
+  }                                                                            
+t &front(Deque_##t *deq) 
+  {                                                   
+    assert(deq->offset - deq->start_i > 0);                                    
+    return deq->data[deq->start_i];                                            
+  }                                                                            
+t &back(Deque_##t *deq) 
+  {                                                    
+    assert(deq->offset - deq->start_i > 0);                                    
+    return deq->data[(deq->offset - 1) % deq->cap];                            
+  }                                                                            
+Deque_##t##_Iterator begin(Deque_##t *deq) 
+  {                                 
+    Deque_##t##_Iterator it;                                                   
+    Deque_##t##_Iterator_ctor(&it, deq, 0);                                    
+    return it;                                                                 
+  }                                                                            
+Deque_##t##_Iterator end(Deque_##t *deq) 
+  {
+    Deque_##t##_Iterator it;                                                   
+    Deque_##t##_Iterator_ctor(&it, deq, deq->offset - deq->start_i);           
+    return it;                                                                 
+  }                                                                            
+void clear(Deque_##t *deq) 
+  {                                                 
+    deq->start_i = 0;                                                          
+    deq->offset = 0;                                                           
+  }                                                                            
+void dtor(Deque_##t *deq) 
+  { 
+    free(deq->data); 
+  }                               
+void sort(Deque_##t *deq, Deque_##t##_Iterator begin, Deque_##t##_Iterator end) 
+  {                                        
+    unsigned int sort_size = (end.index - begin.index + deq->cap) % deq->cap;  
+    t *tmpArr = (t *)malloc(sort_size * sizeof(Deque_##t));                    
+    for (unsigned int i = 0; i < sort_size; i++) 
+      {                             
+      tmpArr[i] = deq->at(deq, (begin.index + i) % deq->cap);                  
+      }                                                                         
+    qsort_r(tmpArr, sort_size, sizeof(t), deq->compar, (void *)deq->comp);      
+    for (unsigned int i = 0; i < sort_size; i++) 
+      {                             
+        deq->at(deq, (begin.index + i) % deq->cap) = tmpArr[i];                  
+      }                                                                          
+    free(tmpArr);                                                              
+  }                                                                            
+bool Deque_##t##_equal(Deque_##t &deq1, Deque_##t &deq2) 
+  {                   
+    if (deq1.size(&deq1) != deq2.size(&deq2))                                  
+      return false;                                                            
+    for (unsigned int i = 0; i < deq1.size(&deq1); i++) 
+      {                      
+        if (deq1.comp(deq1.at(&deq1, i), deq2.at(&deq2, i)) ||  deq2.comp(deq2.at(&deq2, i), deq1.at(&deq1, i)))                     
+        return false;                                                          
+      }                                                                          
+    return true;                                                               
+  }      
