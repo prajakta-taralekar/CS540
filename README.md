@@ -1,2 +1,4 @@
-# CS540 - Object-Oriented
+# CS540 - Advanced Topics - Object Oriented Programming
 # Project 1
+
+Prajakta Taralekar
