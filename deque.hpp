@@ -21,8 +21,8 @@ struct Deque_##t##_Iterator
   };                                                                           
 struct Deque_##t 
   {                                                           
-    unsigned int cap;                                                          
-    unsigned int start_i;                                                      
+    unsigned int capp;                                                          
+    unsigned int start;                                                      
     unsigned int offset;                                                       
     char type_name[sizeof(#t) + sizeof("Deque_") - 1];                         
     t *data;                                                                   
@@ -46,27 +46,102 @@ struct Deque_##t
   };
 
 /* Deque_##t##_Iterator functions */                                         
-void inc(Deque_##t##_Iterator *it) 
+void inc(Deque_##t##_Iterator *iter) 
   {
-    it->index++; 
+    iter->index++; 
   }                          
-void dec(Deque_##t##_Iterator *it) 
+void dec(Deque_##t##_Iterator *iter) 
   { 
-    it->index--; 
+    iter->index--; 
   }                          
-t &deref(Deque_##t##_Iterator *it) 
+t &deref(Deque_##t##_Iterator *iter) 
   {
-    return it->deq->at(it->deq, it->index);                                    
+    return iter->deq->at(iter->deq, iter->index);                                    
   }                                                                            
-bool Deque_##t##_Iterator_equal(const Deque_##t##_Iterator &it1, const Deque_##t##_Iterator &it2) 
+bool Deque_##t##_Iterator_equal(const Deque_##t##_Iterator &iter1, const Deque_##t##_Iterator &iter2) 
   {           
-    return (it1.index == it2.index) && (it1.deq == it2.deq);                   
+    return (iter1.index == iter2.index) && (iter1.deq == iter2.deq);                   
   }                                                                            
-void Deque_##t##_Iterator_ctor(Deque_##t##_Iterator *it, Deque_##t *deq, unsigned int index) 
+void Deque_##t##_Iterator_ctor(Deque_##t##_Iterator *iter, Deque_##t *deq, unsigned int index) 
   {                         
-    it->index = index;                                                         
-    it->deq = deq;                                                             
-    it->inc = &inc;                                                            
-    it->dec = &dec;                                                            
-    it->deref = &deref;                                                        
+    iter->index = index;                                                         
+    iter->deq = deq;                                                             
+    iter->inc = &inc;                                                            
+    iter->dec = &dec;                                                            
+    iter->deref = &deref;                                                        
+  }       
+
+/* Deque_##t functions */                                                    
+int t##_compar(const void *left, const void *right, void *compr) 
+  {             
+    bool (*comp)(const t &, const t &) = (bool (*)(const t &, const t &))compr;                                
+    const t *left_c = (const t *)left;                                           
+    const t *right_c = (const t *)right;                                           
+    if (comp(*left_c, *right_c))                                                  
+      return -1;                                                               
+    if (comp(*right_c, *left_c))                                                  
+      return 1;                                                                
+      return 0;                                                                  
+  }                                                                            
+unsigned int size(Deque_##t *deq) 
+  { 
+    return deq->offset - deq->start_i; 
+  }     
+bool empty(Deque_##t *deq) 
+  { 
+    return deq->size(deq) == 0; 
+  }                   
+void resize(Deque_##t *deq) 
+  {                                                
+    t *new_data = (t *)malloc(2 * deq->cap * sizeof(Deque_##t));               
+    for (unsigned int i = 0; i < deq->cap; i++) 
+      {                              
+        new_data[i] = deq->data[(i + deq->start_i) % deq->cap];                  
+      }                                                                          
+    deq->start_i = 0;                                                          
+    deq->offset = deq->cap;                                                    
+    deq->cap *= 2;                                                             
+    free(deq->data);                                                           
+    deq->data = new_data;                                                      
+  }                                                                            
+void push_front(Deque_##t *deq, t entry) 
+  {                                   
+    if (deq->offset - deq->start_i == deq->cap) 
+      {                              
+        deq->resize(deq);                                                        
+      }                                                                         
+    deq->data[(deq->start_i + deq->cap - 1) % deq->cap] = entry;              
+    deq->start_i = (deq->start_i + deq->cap - 1) % deq->cap;                   
+    if (deq->offset < deq->start_i)                                            
+      deq->offset += deq->cap;                                                 
+  }                                                                            
+void push_back(Deque_##t *deq, t entry) 
+  {                                    
+    if (deq->offset - deq->start_i == deq->cap) 
+    {                              
+      deq->resize(deq);                                                        
+    }                                                                          
+    deq->data[deq->offset % deq->cap] = entry;                                 
+    deq->offset++;                                                             
+  }                                                                            
+void pop_front(Deque_##t *deq) 
+  {                                             
+    if (deq->start_i != deq->offset) 
+      {                                         
+        deq->start_i = (deq->start_i + 1) % deq->cap;                            
+        if (deq->offset > deq->cap && deq->start_i < deq->offset - deq->cap) 
+          {   
+            deq->offset -= deq->cap;                                               
+          }                                                                        
+      }                                                                          
+  }                                                                            
+void pop_back(Deque_##t *deq) 
+  {                                              
+    if (deq->start_i != deq->offset) 
+      {                                         
+        if (deq->offset == 0)                                                    
+          deq->offset = deq->cap - 1;                                            
+        else                                                                     
+          deq->offset--;                                                         
+      }                                                                          
   }       
